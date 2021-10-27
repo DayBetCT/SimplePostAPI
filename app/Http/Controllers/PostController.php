@@ -2,62 +2,86 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\PostRequest;
+use App\Http\Requests\UpdatePostRequest;
+use App\Http\Resources\PostCollection;
+use App\Http\Resources\PostResource;
+use App\Models\Post;
+use App\Services\PostService;
 
 class PostController extends Controller
 {
+    private $postService;
+
+    public function __construct() {
+
+        $this->postService = new PostService;
+    }
+
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return App\Http\Resources\PostCollection
      */
     public function index()
     {
-        //
+        $posts = $this->postService->getAll();
+
+        // return response()->json(new PostCollection($posts));
+        // return response()->json($posts);
+        return new PostCollection($posts);
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @param  App\Http\Requests\PostRequest  $request
+     * @return App\Http\Resources\PostResource
      */
-    public function store(Request $request)
+    public function store(PostRequest $request)
     {
-        //
+        $post = $this->postService->addPost($request->validated());
+
+        return new PostResource($post);
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @param  Post  $post
+     * @return App\Http\Resources\PostResource
      */
-    public function show($id)
+    public function show(Post $post)
     {
-        //
+        $newPost = $this->postService->getPost($post);
+
+        return new PostResource($newPost);
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @param  App\Http\Requests\UpdatePostRequest;  $request
+     * @param  App\Models\Post  $post
+     * @return App\Http\Resources\PostResource
      */
-    public function update(Request $request, $id)
+    public function update(Post $post, UpdatePostRequest $request)
     {
-        //
+        $updatedPost = $this->postService->updatePost($post->toArray(), $request->validated());
+
+        return new PostResource($updatedPost);
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $id
+     * @param  App\Models\Post  $post
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Post $post)
     {
-        //
+        $deletedPost = $this->postService->deletePost($post->toArray());
+
+        return new PostResource($deletedPost);
     }
 }
